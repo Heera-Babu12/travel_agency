@@ -2,6 +2,36 @@
 class INDEX{
 
 	function __construct(){
+		// connection to check whether DB already exist - Idea refernce from chatgpt
+		$connDB = new mysqli("localhost", "root", "");
+
+		if ($connDB->connect_error) {
+			die("Connection failed due to error : " . $connDB->connect_error);
+		}
+
+		$checkDBExist = $connDB->query("SHOW DATABASES LIKE 'travel_agency'")->num_rows > 0;
+
+		if (!$checkDBExist) {
+			$sqlContents = file_get_contents("queries.sql");
+
+			if ($connDB->multi_query($sqlContents)) {
+				do {
+					if ($result = $connDB->store_result()) {
+						$result->free();
+					}
+				}while ($connDB->next_result());
+				print("Database and tables created.");
+			} 
+			else {
+				print("Error on SQL file: " . $connDB->error);
+			}
+		} 
+		else {
+			echo "Database already exists.";
+		}
+		$connDB->close();
+		
+		// Connection for Project
 		$this->conn = mysqli_connect("localhost", "root", "", "travel_agency");
 		
 		if(mysqli_connect_error()){
